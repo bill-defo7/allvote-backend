@@ -1,0 +1,88 @@
+# =====================================================================
+#  AllVote — configuration
+#  Profil actif : variable ALLVOTE_SPRING_PROFILES_ACTIVE (dev par défaut, prod en ligne)
+# =====================================================================
+spring:
+  application:
+    name: allvote
+  config:
+    import: optional:file:.env[.properties]   # lit le fichier .env à la racine du projet
+  profiles:
+    active: ${ALLVOTE_SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    url: ${ALLVOTE_DB_URL:jdbc:postgresql://localhost:5434/allvote}
+    username: ${ALLVOTE_DB_USER:allvote}
+    password: ${ALLVOTE_DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+server:
+  port: ${ALLVOTE_PORT:8081}
+  error:
+    include-stacktrace: never
+    include-message: never
+
+app:
+  front-url: ${ALLVOTE_FRONT_URL:http://localhost:5173}
+  public-url: ${ALLVOTE_PUBLIC_URL:http://localhost:8081}
+  donnees-demo: ${ALLVOTE_DONNEES_DEMO:false}
+  cors:
+    allowed-origins: ${ALLVOTE_CORS_ORIGINS:http://localhost:5173}
+  jwt:
+    secret: ${ALLVOTE_JWT_SECRET:}
+    expiration-minutes: ${ALLVOTE_JWT_EXPIRATION_MINUTES:120}
+  super-admin:
+    email: ${ALLVOTE_SUPERADMIN_EMAIL:}
+    password: ${ALLVOTE_SUPERADMIN_PASSWORD:}
+  payment:
+    mode: ${ALLVOTE_PAYMENT_MODE:simulated}          # simulated | aangaraa
+    aangaraa:
+      base-url: ${ALLVOTE_AANGARAA_BASE_URL:https://api-production.aangaraa-pay.com}
+      app-key: ${ALLVOTE_AANGARAA_APP_KEY:}
+      notify-url: ${ALLVOTE_PUBLIC_URL:http://localhost:8081}/api/payments/aangaraa/webhook
+      return-url: ${ALLVOTE_FRONT_URL:http://localhost:5173}
+  vote:
+    max-voix-par-transaction: ${ALLVOTE_VOTE_MAX_VOIX:1000}
+    expiration-minutes: ${ALLVOTE_VOTE_EXPIRATION_MINUTES:30}
+    reconciliation-delay-ms: ${ALLVOTE_VOTE_RECONCILIATION_MS:30000}
+  storage:
+    dir: ${ALLVOTE_STORAGE_DIR:./uploads}
+  security:
+    trust-forwarded-headers: ${ALLVOTE_TRUST_FORWARDED_HEADERS:false}
+
+logging:
+  level:
+    com.allvote: INFO
+
+---
+# ---------- DÉVELOPPEMENT : Hibernate crée/modifie les tables depuis les entités ----------
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    hibernate:
+      ddl-auto: update
+  flyway:
+    enabled: false
+
+---
+# ---------- PRODUCTION : schéma figé et versionné par Flyway ----------
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+app:
+  donnees-demo: false

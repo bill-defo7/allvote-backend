@@ -1,0 +1,15 @@
+target/
+.idea/
+*.iml
+.vscode/
+HELP.md
+.mvn/wrapper/maven-wrapper.jar
+### Secrets & données locales ###
+.env
+uploads/
+.env.*
+!.env.example
+sauvegarde-*.sql
+paiements-*.csv
+*.dump
+*.log
